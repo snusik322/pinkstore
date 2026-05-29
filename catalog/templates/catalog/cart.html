@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Ваша корзина</h2>
+
+
+  {% if items %}
+    <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+      <tr>
+        <th style="text-align:left; border-bottom:1px solid #ddd; padding:5px;">Товар</th>
+        <th style="text-align:right; border-bottom:1px solid #ddd; padding:5px;">Цена</th>
+        <th style="text-align:center; border-bottom:1px solid #ddd; padding:5px;">Кол-во</th>
+        <th style="text-align:right; border-bottom:1px solid #ddd; padding:5px;">Сумма</th>
+      </tr>
+      {% for row in items %}
+        <tr>
+          <td style="padding:5px;">{{ row.product.title }}</td>
+          <td style="padding:5px; text-align:right;">{{ row.product.price }} ₽</td>
+          <td style="padding:5px; text-align:center;">{{ row.qty }}</td>
+          <td style="padding:5px; text-align:right;">{{ row.line_price }} ₽</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+
+    <p style="margin-top:15px; font-weight:bold;">
+      Итого: {{ total_price }} ₽
+    </p>
+
+
+    <a href="{% url 'catalog:clear_cart' %}"
+       style="display:inline-block; margin-top:10px; color:#d1005a;">
+      Очистить корзину
+    </a>
+  {% else %}
+    <p>Корзина пока пустая.</p>
+  {% endif %}
+{% endblock %}

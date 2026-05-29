@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2>Общий чат PinkStore</h2>
+    
+    <!-- Окно, где будут появляться сообщения -->
+    <div id="chat-log" style="height: 300px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; overflow-y: scroll; margin-bottom: 15px; background: #fff; color: #000;">
+        <!-- Сюда JS будет добавлять новые строки -->
+    </div>
+
+
+    <!-- Поле ввода и кнопка -->
+    <div style="display: flex; gap: 10px;">
+        <input id="chat-message-input" type="text" placeholder="Введите сообщение..." style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <button id="chat-message-submit" style="background: #ff1493; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Отправить</button>
+    </div>
+</div>
+
+
+<script>
+    // 1. Подключаемся к WebSocket
+    // Используем window.location.host, чтобы адрес был динамическим (127.0.0.1:8000)
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/'
+    );
+
+
+    // 2. Обрабатываем входящие сообщения от сервера
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.querySelector('#chat-log');
+        
+        // Создаем новый элемент для сообщения
+        const messageElement = document.createElement('div');
+        messageElement.style.marginBottom = '8px';
+        messageElement.innerHTML = `<strong>${data.message.split(':')[0]}</strong>: ${data.message.split(':')[1] || data.message}`;
+        
+        // Добавляем сообщение в окно чата
+        chatLog.appendChild(messageElement);
+        
+        // Автоматически прокручиваем чат вниз
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+
+    chatSocket.onclose = function(e) {
+        console.error('Чат неожиданно закрылся');
+    };
+
+
+    // 3. Отправляем сообщение на сервер по клику на кнопку
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        
+        // Отправляем JSON в веб-сокет
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+        
+        // Очищаем поле ввода
+        messageInputDom.value = '';
+    };
+
+
+    // Чтобы можно было отправлять сообщение по нажатию Enter
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // 13 = Enter
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+</script>
+{% endblock %}
